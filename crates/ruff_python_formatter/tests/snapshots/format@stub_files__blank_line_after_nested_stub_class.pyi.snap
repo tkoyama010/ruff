@@ -1,0 +1,110 @@
+---
+source: crates/ruff_python_formatter/tests/fixtures.rs
+input_file: crates/ruff_python_formatter/resources/test/fixtures/ruff/stub_files/blank_line_after_nested_stub_class.pyi
+---
+## Input
+```python
+class Outer:
+    pass
+class Outer:
+    class OnlyEllipsis: ...
+    class OnlyEllipsis: ...
+    class OnlyPass:
+        pass
+    # comment 1
+    class Comment1:
+        pass
+    # comment 2
+    class Comment2:
+        pass
+    # comment 3
+    class Comment3: ...
+    # comment 4
+    class Comment4: ...
+    @decorator
+    class WithDecorator:
+        pass
+    @decorator
+    class WithDecoratorAndEllipsis: ...
+    @decorator
+    class WithDecoratorAndEllipsis: ...
+    class Nesting1:
+        foo: int
+        def bar(): pass
+    field = 1
+
+
+
+    class AfterMultipleEmptyLines:
+        pass
+
+
+
+
+```
+
+## Outputs
+### Output 1
+```
+indent-style               = space
+line-width                 = 88
+indent-width               = 4
+quote-style                = Double
+line-ending                = LineFeed
+magic-trailing-comma       = Respect
+docstring-code             = Disabled
+docstring-code-line-width  = "dynamic"
+preview                    = Enabled
+```
+
+```python
+class Outer:
+    pass
+
+
+class Outer:
+    class OnlyEllipsis: ...
+
+    class OnlyEllipsis: ...
+
+    class OnlyPass:
+        pass
+
+    # comment 1
+    class Comment1:
+        pass
+
+    # comment 2
+    class Comment2:
+        pass
+
+    # comment 3
+    class Comment3: ...
+
+    # comment 4
+    class Comment4: ...
+
+    @decorator
+    class WithDecorator:
+        pass
+
+    @decorator
+    class WithDecoratorAndEllipsis: ...
+
+    @decorator
+    class WithDecoratorAndEllipsis: ...
+
+    class Nesting1:
+        foo: int
+
+        def bar():
+            pass
+
+    field = 1
+
+    class AfterMultipleEmptyLines:
+        pass
+```
+
+
+

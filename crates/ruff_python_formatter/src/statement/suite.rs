@@ -11,6 +11,7 @@ use crate::comments::{
 use crate::context::{NodeLevel, TopLevelStatementPosition, WithIndentLevel, WithNodeLevel};
 use crate::expression::expr_string_literal::ExprStringLiteralKind;
 use crate::prelude::*;
+use crate::preview::is_blank_line_after_nested_stub_class_enabled;
 use crate::statement::stmt_expr::FormatStmtExpr;
 use crate::verbatim::{
     suppressed_node, write_suppressed_statements_starting_with_leading_comment,
@@ -447,7 +448,11 @@ fn stub_file_empty_lines(
         }
         SuiteKind::Class | SuiteKind::Other | SuiteKind::Function => {
             if empty_line_condition
-                && lines_after_ignoring_end_of_line_trivia(preceding.end(), source) > 1
+                && ((is_blank_line_after_nested_stub_class_enabled(f.context())
+                    && preceding.as_class_def_stmt().is_some_and(|class| {
+                        !contains_only_an_ellipsis(&class.body, f.context().comments())
+                    }))
+                    || lines_after_ignoring_end_of_line_trivia(preceding.end(), source) > 1)
             {
                 empty_line().fmt(f)
             } else {

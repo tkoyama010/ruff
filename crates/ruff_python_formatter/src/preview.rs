@@ -24,3 +24,10 @@ pub(crate) const fn is_prefer_splitting_right_hand_side_of_assignments_enabled(
 ) -> bool {
     context.is_preview()
 }
+
+/// Returns `true` if the [`blank_line_after_nested_stub_class`](https://github.com/astral-sh/ruff/issues/8891) preview style is enabled.
+pub(crate) const fn is_blank_line_after_nested_stub_class_enabled(
+    context: &PyFormatContext,
+) -> bool {
+    context.is_preview()
+}
