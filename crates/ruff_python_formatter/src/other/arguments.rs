@@ -9,7 +9,6 @@ use crate::expression::is_expression_huggable;
 use crate::expression::parentheses::{empty_parenthesized, parenthesized, Parentheses};
 use crate::other::commas;
 use crate::prelude::*;
-use crate::preview::is_hug_parens_with_braces_and_square_brackets_enabled;
 
 #[derive(Default)]
 pub struct FormatArguments;
@@ -178,10 +177,6 @@ fn is_single_argument_parenthesized(argument: &Expr, call_end: TextSize, source:
 /// Hugging should only be applied to single-argument collections, like lists, or starred versions
 /// of those collections.
 fn is_argument_huggable(item: &Arguments, context: &PyFormatContext) -> bool {
-    if !is_hug_parens_with_braces_and_square_brackets_enabled(context) {
-        return false;
-    }
-
     // Find the lone argument or `**kwargs` keyword.
     let arg = match (item.args.as_slice(), item.keywords.as_slice()) {
         ([arg], []) => arg,

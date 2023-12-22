@@ -50,10 +50,10 @@ impl NeedsParentheses for ExprFString {
     ) -> OptionalParentheses {
         if self.value.is_implicit_concatenated() {
             OptionalParentheses::Multiline
-        } else if memchr2(b'\n', b'\r', context.source()[self.range].as_bytes()).is_none() {
-            OptionalParentheses::BestFit
-        } else {
+        } else if is_multiline_fstring(self, context.source()) {
             OptionalParentheses::Never
+        } else {
+            OptionalParentheses::BestFit
         }
     }
 }
@@ -81,4 +81,8 @@ pub(crate) fn f_string_quoting(f_string: &ExprFString, locator: &Locator) -> Quo
     } else {
         Quoting::CanChange
     }
+}
+
+pub(crate) fn is_multiline_fstring(f_string: &ExprFString, source: &str) -> bool {
+    memchr2(b'\n', b'\r', source[f_string.range].as_bytes()).is_some()
 }

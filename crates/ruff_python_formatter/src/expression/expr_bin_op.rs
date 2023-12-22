@@ -38,7 +38,7 @@ impl NeedsParentheses for ExprBinOp {
         } else if let Some(literal_expr) = self.left.as_literal_expr() {
             // Multiline strings are guaranteed to never fit, avoid adding unnecessary parentheses
             if !literal_expr.is_implicit_concatenated()
-                && is_multiline_string(literal_expr.into(), context.source())
+                && is_multiline_string(literal_expr, context.source())
                 && has_parentheses(&self.right, context).is_some()
                 && !context.comments().has_dangling(self)
                 && !context.comments().has(literal_expr)

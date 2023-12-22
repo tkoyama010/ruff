@@ -1,5 +1,5 @@
 use ruff_formatter::FormatRuleWithOptions;
-use ruff_python_ast::{AnyNodeRef, ExprStringLiteral};
+use ruff_python_ast::{AnyNodeRef, ExprStringLiteral, LiteralExpressionRef};
 use ruff_text_size::{Ranged, TextLen, TextRange};
 
 use crate::comments::SourceComment;
@@ -80,7 +80,7 @@ impl NeedsParentheses for ExprStringLiteral {
     ) -> OptionalParentheses {
         if self.value.is_implicit_concatenated() {
             OptionalParentheses::Multiline
-        } else if is_multiline_string(self.into(), context.source()) {
+        } else if is_multiline_string(LiteralExpressionRef::StringLiteral(self), context.source()) {
             OptionalParentheses::Never
         } else {
             OptionalParentheses::BestFit
@@ -88,8 +88,8 @@ impl NeedsParentheses for ExprStringLiteral {
     }
 }
 
-pub(super) fn is_multiline_string(expr: AnyNodeRef, source: &str) -> bool {
-    if expr.is_expr_string_literal() || expr.is_expr_bytes_literal() {
+pub(crate) fn is_multiline_string(expr: LiteralExpressionRef, source: &str) -> bool {
+    if expr.is_string_literal() || expr.is_bytes_literal() {
         let contents = &source[expr.range()];
         let prefix = StringPrefix::parse(contents);
         let quotes =

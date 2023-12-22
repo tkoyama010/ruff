@@ -7,21 +7,25 @@ use ruff_formatter::{
 use ruff_python_ast as ast;
 use ruff_python_ast::parenthesize::parentheses_iterator;
 use ruff_python_ast::visitor::preorder::{walk_expr, PreorderVisitor};
-use ruff_python_ast::{AnyNodeRef, Expr, ExpressionRef, Operator};
+use ruff_python_ast::{AnyNodeRef, Expr, ExpressionRef, LiteralExpressionRef, Operator};
 use ruff_python_trivia::CommentRanges;
 use ruff_text_size::Ranged;
 
 use crate::builders::parenthesize_if_expands;
 use crate::comments::{leading_comments, trailing_comments, LeadingDanglingTrailingComments};
 use crate::context::{NodeLevel, WithNodeLevel};
+use crate::expression::expr_f_string::is_multiline_fstring;
 use crate::expression::expr_generator_exp::is_generator_parenthesized;
+use crate::expression::expr_string_literal::is_multiline_string;
 use crate::expression::expr_tuple::is_tuple_parenthesized;
 use crate::expression::parentheses::{
     is_expression_parenthesized, optional_parentheses, parenthesized, NeedsParentheses,
     OptionalParentheses, Parentheses, Parenthesize,
 };
 use crate::prelude::*;
-use crate::preview::is_hug_parens_with_braces_and_square_brackets_enabled;
+use crate::preview::{
+    is_hug_parens_with_braces_and_square_brackets_enabled, is_multiline_string_handling_enabled,
+};
 
 mod binary_like;
 pub(crate) mod expr_attribute;
@@ -1084,7 +1088,7 @@ pub(crate) fn has_own_parentheses(
 }
 
 /// Returns `true` if the expression can hug directly to enclosing parentheses, as in Black's
-/// `hug_parens_with_braces_and_square_brackets` preview style behavior.
+/// `hug_parens_with_braces_and_square_brackets` or `multiline_string_handling` preview styles behavior.
 ///
 /// For example, in preview style, given:
 /// ```python
@@ -1111,10 +1115,6 @@ pub(crate) fn has_own_parentheses(
 /// )
 /// ```
 pub(crate) fn is_expression_huggable(expr: &Expr, context: &PyFormatContext) -> bool {
-    if !is_hug_parens_with_braces_and_square_brackets_enabled(context) {
-        return false;
-    }
-
     match expr {
         Expr::Tuple(_)
         | Expr::List(_)
@@ -1122,18 +1122,28 @@ pub(crate) fn is_expression_huggable(expr: &Expr, context: &PyFormatContext) -> 
         | Expr::Dict(_)
         | Expr::ListComp(_)
         | Expr::SetComp(_)
-        | Expr::DictComp(_) => true,
+        | Expr::DictComp(_) => is_hug_parens_with_braces_and_square_brackets_enabled(context),
 
-        Expr::Starred(ast::ExprStarred { value, .. }) => matches!(
-            value.as_ref(),
-            Expr::Tuple(_)
-                | Expr::List(_)
-                | Expr::Set(_)
-                | Expr::Dict(_)
-                | Expr::ListComp(_)
-                | Expr::SetComp(_)
-                | Expr::DictComp(_)
-        ),
+        Expr::Starred(ast::ExprStarred { value, .. }) => is_expression_huggable(value, context),
+
+        Expr::StringLiteral(string) => {
+            is_multiline_string_handling_enabled(context)
+                && !string.value.is_implicit_concatenated()
+                && is_multiline_string(
+                    LiteralExpressionRef::StringLiteral(string),
+                    context.source(),
+                )
+        }
+        Expr::BytesLiteral(bytes) => {
+            is_multiline_string_handling_enabled(context)
+                && !bytes.value.is_implicit_concatenated()
+                && is_multiline_string(LiteralExpressionRef::BytesLiteral(bytes), context.source())
+        }
+        Expr::FString(fstring) => {
+            is_multiline_string_handling_enabled(context)
+                && !fstring.value.is_implicit_concatenated()
+                && is_multiline_fstring(fstring, context.source())
+        }
 
         Expr::BoolOp(_)
         | Expr::NamedExpr(_)
@@ -1147,14 +1157,11 @@ pub(crate) fn is_expression_huggable(expr: &Expr, context: &PyFormatContext) -> 
         | Expr::YieldFrom(_)
         | Expr::Compare(_)
         | Expr::Call(_)
-        | Expr::FString(_)
         | Expr::Attribute(_)
         | Expr::Subscript(_)
         | Expr::Name(_)
         | Expr::Slice(_)
         | Expr::IpyEscapeCommand(_)
-        | Expr::StringLiteral(_)
-        | Expr::BytesLiteral(_)
         | Expr::NumberLiteral(_)
         | Expr::BooleanLiteral(_)
         | Expr::NoneLiteral(_)

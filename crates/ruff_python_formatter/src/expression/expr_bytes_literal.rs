@@ -1,5 +1,5 @@
-use ruff_python_ast::AnyNodeRef;
 use ruff_python_ast::ExprBytesLiteral;
+use ruff_python_ast::{AnyNodeRef, LiteralExpressionRef};
 
 use crate::comments::SourceComment;
 use crate::expression::expr_string_literal::is_multiline_string;
@@ -41,7 +41,7 @@ impl NeedsParentheses for ExprBytesLiteral {
     ) -> OptionalParentheses {
         if self.value.is_implicit_concatenated() {
             OptionalParentheses::Multiline
-        } else if is_multiline_string(self.into(), context.source()) {
+        } else if is_multiline_string(LiteralExpressionRef::BytesLiteral(self), context.source()) {
             OptionalParentheses::Never
         } else {
             OptionalParentheses::BestFit
