@@ -310,7 +310,7 @@ impl StringPart {
             configured_style
         };
 
-        let raw_content = locator.slice(self.content_range);
+        let raw_content = self.source(locator);
 
         let quotes = match quoting {
             Quoting::Preserve => self.quotes,
@@ -335,6 +335,10 @@ impl StringPart {
             text: normalized,
             quotes,
         }
+    }
+
+    pub(crate) fn source<'a>(&self, locator: &'a Locator) -> &'a str {
+        locator.slice(self.content_range)
     }
 }
 

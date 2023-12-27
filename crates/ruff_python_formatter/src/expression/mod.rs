@@ -26,6 +26,7 @@ use crate::prelude::*;
 use crate::preview::{
     is_hug_parens_with_braces_and_square_brackets_enabled, is_multiline_string_handling_enabled,
 };
+use crate::string::{AnyString, StringPart};
 
 mod binary_like;
 pub(crate) mod expr_attribute;
@@ -1126,24 +1127,9 @@ pub(crate) fn is_expression_huggable(expr: &Expr, context: &PyFormatContext) -> 
 
         Expr::Starred(ast::ExprStarred { value, .. }) => is_expression_huggable(value, context),
 
-        Expr::StringLiteral(string) => {
-            is_multiline_string_handling_enabled(context)
-                && !string.value.is_implicit_concatenated()
-                && is_multiline_string(
-                    LiteralExpressionRef::StringLiteral(string),
-                    context.source(),
-                )
-        }
-        Expr::BytesLiteral(bytes) => {
-            is_multiline_string_handling_enabled(context)
-                && !bytes.value.is_implicit_concatenated()
-                && is_multiline_string(LiteralExpressionRef::BytesLiteral(bytes), context.source())
-        }
-        Expr::FString(fstring) => {
-            is_multiline_string_handling_enabled(context)
-                && !fstring.value.is_implicit_concatenated()
-                && is_multiline_fstring(fstring, context.source())
-        }
+        Expr::StringLiteral(string) => is_huggable_string(AnyString::String(string), context),
+        Expr::BytesLiteral(bytes) => is_huggable_string(AnyString::Bytes(bytes), context),
+        Expr::FString(fstring) => is_huggable_string(AnyString::FString(fstring), context),
 
         Expr::BoolOp(_)
         | Expr::NamedExpr(_)
@@ -1167,6 +1153,78 @@ pub(crate) fn is_expression_huggable(expr: &Expr, context: &PyFormatContext) -> 
         | Expr::NoneLiteral(_)
         | Expr::EllipsisLiteral(_) => false,
     }
+}
+
+/// Returns `true` if `string` is a
+/// * multiline string
+/// * ...that is not implicitly concatenated
+/// * ...where the opening and closing quotes have no content on the same line.
+///
+/// ## Examples
+///
+/// ```python
+/// call("""
+///     ABCD
+/// """)
+/// ```
+///
+/// Returns `true` because the `"""` are n their own line
+///
+/// ```python
+/// call("""ABCD
+///     More
+/// """)
+/// ```
+///
+/// Returns `false` because there's content on the same line as the opening quotes.
+///
+/// ```python
+/// call("""
+///     ABCD
+///     More"""
+/// )
+/// ```
+///
+/// Returns `false` because there's content on the same line as the closing quotes.
+///
+/// ```python
+/// call("""\
+///     ABCD
+///     More
+/// """)
+/// ```
+///
+/// Returns `true` because there's only a line continuation after the opening quotes.
+fn is_huggable_string(string: AnyString, context: &PyFormatContext) -> bool {
+    if string.is_implicit_concatenated() || !is_multiline_string_handling_enabled(context) {
+        return false;
+    }
+
+    let multiline = match string {
+        AnyString::String(string) => is_multiline_string(
+            LiteralExpressionRef::StringLiteral(string),
+            context.source(),
+        ),
+        AnyString::Bytes(bytes) => {
+            is_multiline_string(LiteralExpressionRef::BytesLiteral(bytes), context.source())
+        }
+        AnyString::FString(fstring) => is_multiline_fstring(fstring, context.source()),
+    };
+
+    if !multiline {
+        return false;
+    }
+
+    let locator = context.locator();
+    let part = StringPart::from_source(string.range(), &locator);
+    let source = part.source(&locator);
+
+    source
+        // allow `"""\`
+        .strip_prefix('\\')
+        .unwrap_or(source)
+        .starts_with(['\n', '\r'])
+        && source.trim_end_matches(' ').ends_with('\n')
 }
 
 /// The precedence of [python operators](https://docs.python.org/3/reference/expressions.html#operator-precedence) from

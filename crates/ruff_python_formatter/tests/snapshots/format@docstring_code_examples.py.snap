@@ -8213,20 +8213,7 @@ def markdown_skipped_rst_directive():
 ```diff
 --- Stable
 +++ Preview
-@@ -480,10 +480,8 @@
-     Do cool stuff::
- 
-      if True:
--         cool_stuff(
--             '''
--     hiya'''
--         )
-+         cool_stuff('''
-+     hiya''')
- 
-     Done.
-     """
-@@ -958,13 +956,11 @@
+@@ -958,13 +958,11 @@
      Do cool stuff.
  
      ``````
@@ -9617,20 +9604,7 @@ def markdown_skipped_rst_directive():
 ```diff
 --- Stable
 +++ Preview
-@@ -480,10 +480,8 @@
-   Do cool stuff::
- 
-    if True:
--     cool_stuff(
--       '''
--   hiya'''
--     )
-+     cool_stuff('''
-+   hiya''')
- 
-   Done.
-   """
-@@ -958,13 +956,11 @@
+@@ -958,13 +958,11 @@
    Do cool stuff.
  
    ``````
@@ -11030,20 +11004,7 @@ def markdown_skipped_rst_directive():
 ```diff
 --- Stable
 +++ Preview
-@@ -489,10 +489,8 @@
- 	Do cool stuff::
- 
- 	 if True:
--	         cool_stuff(
--	                 '''
--	 hiya'''
--	         )
-+	         cool_stuff('''
-+	 hiya''')
- 
- 	Done.
- 	"""
-@@ -967,13 +965,11 @@
+@@ -967,13 +967,11 @@
  	Do cool stuff.
  
  	``````
@@ -12434,20 +12395,7 @@ def markdown_skipped_rst_directive():
 ```diff
 --- Stable
 +++ Preview
-@@ -480,10 +480,8 @@
- 	Do cool stuff::
- 
- 	 if True:
--	     cool_stuff(
--	         '''
--	 hiya'''
--	     )
-+	     cool_stuff('''
-+	 hiya''')
- 
- 	Done.
- 	"""
-@@ -958,13 +956,11 @@
+@@ -958,13 +958,11 @@
  	Do cool stuff.
  
  	``````
@@ -13847,20 +13795,7 @@ def markdown_skipped_rst_directive():
 ```diff
 --- Stable
 +++ Preview
-@@ -489,10 +489,8 @@
-     Do cool stuff::
- 
-      if True:
--         cool_stuff(
--             '''
--     hiya'''
--         )
-+         cool_stuff('''
-+     hiya''')
- 
-     Done.
-     """
-@@ -967,13 +965,11 @@
+@@ -967,13 +967,11 @@
      Do cool stuff.
  
      ``````
@@ -15251,20 +15186,7 @@ def markdown_skipped_rst_directive():
 ```diff
 --- Stable
 +++ Preview
-@@ -480,10 +480,8 @@
-     Do cool stuff::
- 
-      if True:
--         cool_stuff(
--             '''
--     hiya'''
--         )
-+         cool_stuff('''
-+     hiya''')
- 
-     Done.
-     """
-@@ -958,13 +956,11 @@
+@@ -958,13 +958,11 @@
      Do cool stuff.
  
      ``````
